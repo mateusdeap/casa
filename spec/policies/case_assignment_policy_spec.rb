@@ -1,4 +1,5 @@
 require "rails_helper"
+require "ostruct"
 
 RSpec.describe CaseAssignmentPolicy do
   subject { described_class }
@@ -19,7 +20,36 @@ RSpec.describe CaseAssignmentPolicy do
     create(:case_assignment, casa_case: other_casa_case)
   end
 
-  permissions :create?, :destroy? do
+  let(:record_from_same_org) { OpenStruct.new(casa_org: organization) }
+  let(:record_from_another_org) { OpenStruct.new(casa_org: other_organization) }
+
+  permissions :create? do
+    context "User is a casa admin" do
+      context "and record is in the same org" do
+        it { is_expected.to permit(casa_admin, record_from_same_org) }
+      end
+
+      context "and in a different org" do
+        it { is_expected.to_not permit(casa_admin, record_from_another_org) }
+      end
+    end
+
+    context "User is a supervisor" do
+      context "and record is in the same org" do
+        it { is_expected.to permit(supervisor, record_from_same_org) }
+      end
+
+      context "and in a different org" do
+        it { is_expected.to_not permit(supervisor, record_from_another_org) }
+      end
+    end
+
+    context "User is a volunteer" do
+      it { is_expected.to_not permit(volunteer, record_from_same_org) }
+    end
+  end
+
+  permissions :destroy? do
     it "allows casa_admins" do
       is_expected.to permit(casa_admin)
     end

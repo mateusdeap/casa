@@ -3,7 +3,7 @@ class CaseAssignmentsController < ApplicationController
   after_action :verify_authorized
 
   def create
-    authorize CaseAssignment
+    authorize case_assignment_parent, policy_class: CaseAssignmentPolicy
     case_assignments = case_assignment_parent.case_assignments
     existing_case_assignment = if params[:volunteer_id]
       case_assignments.where(casa_case_id: case_assignment_params[:casa_case_id], active: false).first
